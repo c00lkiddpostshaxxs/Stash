@@ -28,7 +28,7 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
         "zip", "rar", "7z", "tar", "gz",
         "mp4", "mov", "mkv", "avi", "mp3", "m4a",
         "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
-        "apk", "ipa", "exe", "dmg",
+        "apk", "ipa", "exe", "dmg", "iso",
         "jpg", "jpeg", "png", "gif", "webp"
     ]
 
@@ -40,6 +40,11 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
         config.waitsForConnectivity = true
         config.timeoutIntervalForRequest = 300
         config.timeoutIntervalForResource = 86400
+        config.httpAdditionalHeaders = [
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15"
+        ]
+        config.allowsCellularAccess = true
+        config.shouldUseExtendedBackgroundIdleMode = true
         session = URLSession(configuration: config, delegate: self, delegateQueue: .main)
         loadDownloads()
     }
