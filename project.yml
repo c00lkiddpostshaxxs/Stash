@@ -4,6 +4,7 @@ options:
   deploymentTarget:
     iOS: "15.0"
   defaultConfig: Debug
+  generateEmptyDirectories: true
 
 settings:
   base:
@@ -28,8 +29,11 @@ targets:
         CODE_SIGN_STYLE: Manual
         CODE_SIGNING_REQUIRED: "NO"
         CODE_SIGNING_ALLOWED: "NO"
+
 schemes:
-Stash:
-build:
-targets:
-Stash: all
+  Stash:
+    build:
+      targets:
+        Stash: all
+    archive:
+      config: Release
