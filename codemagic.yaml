@@ -35,9 +35,9 @@ workflows:
 
       - name: Upload to public temp link
         script: |
-          curl -LF "file=@Stash.ipa" https://file.io > upload_result.json
-          cat upload_result.json
+          curl -A "Mozilla/5.0" -F "file=@Stash.ipa" https://0x0.st > upload_result.txt
+          cat upload_result.txt
 
     artifacts:
       - Stash.ipa
-      - upload_result.json
+      - upload_result.txt
