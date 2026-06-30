@@ -1,0 +1,37 @@
+workflows:
+  build-ipa:
+    name: Stash - Build Unsigned IPA
+    max_build_duration: 60
+    environment:
+      xcode: 15.4
+    scripts:
+      - name: Install XcodeGen
+        script: brew install xcodegen
+
+      - name: Generate Xcode project
+        script: xcodegen generate
+
+      - name: Build .app (unsigned)
+        script: |
+          xcodebuild \
+            -scheme Stash \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package into IPA
+        script: |
+          APP_PATH=$(find build -name "*.app" | head -1)
+          mkdir -p output/Payload
+          cp -r "$APP_PATH" output/Payload/
+          cd output
+          zip -r Stash.ipa Payload
+          cd ..
+          mv output/Stash.ipa Stash.ipa
+
+    artifacts:
+      - Stash.ipa
