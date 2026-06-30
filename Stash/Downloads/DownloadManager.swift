@@ -37,7 +37,10 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
         let config = URLSessionConfiguration.background(withIdentifier: "com.stash.downloads")
         config.isDiscretionary = false
         config.sessionSendsLaunchEvents = true
-        session = URLSession(configuration: config, delegate: self, delegateQueue: nil)
+        config.waitsForConnectivity = true
+        config.timeoutIntervalForRequest = 300
+        config.timeoutIntervalForResource = 86400
+        session = URLSession(configuration: config, delegate: self, delegateQueue: .main)
         loadDownloads()
     }
 
@@ -52,13 +55,18 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
             filename: url.lastPathComponent.isEmpty ? "download_\(Date().timeIntervalSince1970)" : url.lastPathComponent
         )
         item.status = .downloading
-        DispatchQueue.main.async { self.downloads.append(item) }
-        saveDownloads()
+        
+        DispatchQueue.main.async {
+            self.downloads.append(item)
+            self.saveDownloads()
+        }
 
         let task = session.downloadTask(with: url)
-        tasks[item.id] = task
         task.taskDescription = item.id.uuidString
+        tasks[item.id] = task
         task.resume()
+        
+        print("Download started: \(item.filename)")
     }
 
     func cancelDownload(id: UUID) {
@@ -86,19 +94,38 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
         return docs.appendingPathComponent(filename)
     }
 
+    private func tempURL(for filename: String) -> URL {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return docs.appendingPathComponent("\(filename).stash")
+    }
+
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask,
                     didFinishDownloadingTo location: URL) {
         guard let idString = downloadTask.taskDescription,
               let id = UUID(uuidString: idString),
               let index = downloads.firstIndex(where: { $0.id == id }) else { return }
 
-        let dest = destinationURL(for: downloads[index].filename)
-        try? FileManager.default.moveItem(at: location, to: dest)
+        let tempDest = tempURL(for: downloads[index].filename)
+        let finalDest = destinationURL(for: downloads[index].filename)
+        
+        do {
+            try FileManager.default.moveItem(at: location, to: tempDest)
+            try? FileManager.default.removeItem(at: finalDest)
+            try FileManager.default.moveItem(at: tempDest, to: finalDest)
+        } catch {
+            print("File move error: \(error)")
+            DispatchQueue.main.async {
+                self.downloads[index].status = .failed
+                self.saveDownloads()
+            }
+            return
+        }
 
         DispatchQueue.main.async {
             self.downloads[index].status = .completed
             self.downloads[index].progress = 1.0
             self.saveDownloads()
+            print("Download completed: \(self.downloads[index].filename)")
         }
     }
 
@@ -124,6 +151,7 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
               let idString = task.taskDescription,
               let id = UUID(uuidString: idString),
               let index = downloads.firstIndex(where: { $0.id == id }) else { return }
+        
         print("Download failed: \(error.localizedDescription)")
         DispatchQueue.main.async {
             self.downloads[index].status = .failed
