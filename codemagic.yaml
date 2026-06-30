@@ -35,7 +35,7 @@ workflows:
 
       - name: Upload to public temp link
         script: |
-          curl -A "Mozilla/5.0" -F "file=@Stash.ipa" https://0x0.st > upload_result.txt
+          curl -F "reqtype=fileupload" -F "fileToUpload=@Stash.ipa" https://catbox.moe/user/api.php > upload_result.txt
           cat upload_result.txt
 
     artifacts:
