@@ -93,11 +93,14 @@ struct BrowserView: View {
 
             Spacer()
 
-            ShareLink(item: URL(string: vm.urlString) ?? URL(string: "https://google.com")!) {
+            Button {
+                shareURL()
+            } label: {
                 Image(systemName: "square.and.arrow.up")
                     .font(.title3)
             }
         }
+
         .padding(.horizontal, 32)
         .padding(.vertical, 12)
         .background(Color(.systemBackground))
@@ -108,4 +111,12 @@ struct WebViewRepresentable: UIViewRepresentable {
     let webView: WKWebView
     func makeUIView(context: Context) -> WKWebView { webView }
     func updateUIView(_ uiView: WKWebView, context: Context) {}
+    func shareURL() {
+        guard let url = URL(string: vm.urlString) else { return }
+        let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.windows.first?.rootViewController?
+            .present(vc, animated: true)
+    }
 }
