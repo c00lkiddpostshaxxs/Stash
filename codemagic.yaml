@@ -3,7 +3,7 @@ workflows:
     name: Stash - Build Unsigned IPA
     max_build_duration: 60
     environment:
-      xcode: 15.4
+      xcode: latest
     scripts:
       - name: Install XcodeGen
         script: brew install xcodegen
