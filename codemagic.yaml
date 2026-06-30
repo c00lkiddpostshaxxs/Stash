@@ -41,11 +41,3 @@ workflows:
     artifacts:
       - Stash.ipa
       - upload_result.txt
-
-    publishing:
-      email:
-        recipients:
-          - bean.haipham43@gmail.com
-        notify:
-          success: true
-          failure: false
