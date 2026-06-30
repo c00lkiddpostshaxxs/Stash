@@ -100,17 +100,11 @@ struct BrowserView: View {
                     .font(.title3)
             }
         }
-
         .padding(.horizontal, 32)
         .padding(.vertical, 12)
         .background(Color(.systemBackground))
     }
-}
 
-struct WebViewRepresentable: UIViewRepresentable {
-    let webView: WKWebView
-    func makeUIView(context: Context) -> WKWebView { webView }
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
     func shareURL() {
         guard let url = URL(string: vm.urlString) else { return }
         let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
@@ -119,4 +113,10 @@ struct WebViewRepresentable: UIViewRepresentable {
             .first?.windows.first?.rootViewController?
             .present(vc, animated: true)
     }
+}
+
+struct WebViewRepresentable: UIViewRepresentable {
+    let webView: WKWebView
+    func makeUIView(context: Context) -> WKWebView { webView }
+    func updateUIView(_ uiView: WKWebView, context: Context) {}
 }
